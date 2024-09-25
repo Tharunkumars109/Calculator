@@ -1,46 +1,86 @@
-let display = document.getElementById('display');
+let currentInput = "0";
+let operator = null;
+let previousInput = null;
+let shouldClearDisplay = false;
 
-function clearDisplay() {
-    display.value = '';
-}
-
-function deleteDigit() {
-    display.value = display.value.slice(0, -1);
-}
-
-function appendNumber(number) {
-    display.value += number;
-}
-
-function appendOperator(operator) {
-    display.value += operator;
-}
-
-function appendDot() {
-    if (!display.value.includes('.')) {
-        display.value += '.';
+function inputDigit(digit) {
+    if (shouldClearDisplay) {
+        currentInput = digit.toString();
+        shouldClearDisplay = false;
+    } else if (currentInput === "0") {
+        currentInput = digit.toString();
+    } else {
+        currentInput += digit;
     }
+    updateDisplay();
+}
+
+function inputDot() {
+    if (!currentInput.includes(".")) {
+        currentInput += ".";
+    }
+    updateDisplay();
+}
+
+function clearEntry() {
+    currentInput = "0";
+    updateDisplay();
+}
+
+function clearAll() {
+    currentInput = "0";
+    previousInput = null;
+    operator = null;
+    updateDisplay();
+}
+
+function toggleSign() {
+    currentInput = (parseFloat(currentInput) * -1).toString();
+    updateDisplay();
+}
+
+function inputOperator(op) {
+    if (operator !== null) {
+        calculate();
+    }
+    previousInput = currentInput;
+    currentInput = "";
+    operator = op;
+    shouldClearDisplay = false;
+    updateDisplay(); // Show the operator pressed in the display
 }
 
 function calculate() {
-    try {
-        display.value = eval(display.value);
-    } catch (error) {
-        display.value = 'Error';
+    if (operator === null || previousInput === null) return;
+    
+    let result;
+    const prev = parseFloat(previousInput);
+    const curr = parseFloat(currentInput);
+
+    switch (operator) {
+        case '+':
+            result = prev + curr;
+            break;
+        case '-':
+            result = prev - curr;
+            break;
+        case '*':
+            result = prev * curr;
+            break;
+        case '/':
+            result = prev / curr;
+            break;
+        default:
+            return;
     }
+
+    currentInput = result.toString();
+    operator = null;
+    previousInput = null;
+    shouldClearDisplay = true;
+    updateDisplay();
 }
 
-function setMode(mode) {
-    display.value = mode;
-}
-
-function showTab(tab) {
-    document.querySelectorAll('.tab-content').forEach(content => {
-        content.classList.add('hidden');
-    });
-    document.getElementById(tab).classList.remove('hidden');
-    document.querySelectorAll('.tab').forEach(button => {
-        button.classList.remove('active');
-    });
-    document.querySelector(`[onclick="showTab('${tab}')"]`).classList.add('active');
+function updateDisplay() {
+    document.getElementById("result").value = currentInput || previousInput || "0";
 }
